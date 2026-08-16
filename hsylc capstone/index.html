@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#080909">
+  <meta name="description" content="FRED: a pixel narrative about war memory, survival, and inner peace.">
+  <title>FRED — THE LAST BROADCAST</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .choice button{transition:background .22s,color .22s,transform .22s,opacity .22s}
+    .choice button:disabled{cursor:default;opacity:.38}
+    .choice button.selected{opacity:1;background:#cdb98e;color:#111;transform:translateX(8px);box-shadow:0 0 32px #b8925544}
+    .prompt{animation:promptPulse 1.1s ease-in-out infinite alternate}
+    @keyframes promptPulse{to{border-color:#d2b779;box-shadow:0 0 20px #b48b4940}}
+    .sound-maze{position:absolute;inset:0;z-index:8;background:#050707;display:grid;grid-template-columns:1fr 210px;color:#d7cfba}
+    .maze-view{position:relative;overflow:hidden;background:#080b0d url('assets/fred-sound-maze-bg-v1.png') center 28%/cover no-repeat;border:10px solid #050606;border-radius:30px;box-shadow:inset 0 0 90px #000b,0 0 0 1px #66594255}
+    .maze-view:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#04060825 0%,transparent 35%,#02040555 100%),repeating-linear-gradient(0deg,transparent 0 5px,#b8a87a08 6px 7px);opacity:.72;pointer-events:none}
+    .maze-arch{display:none}
+    .maze-figure{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:64px;filter:grayscale(1);opacity:.72}
+    .maze-caption{position:absolute;left:0;right:0;top:8%;text-align:center;font-size:12px;letter-spacing:.14em;color:#d8ceb4}
+    .maze-meter{position:absolute;left:50%;bottom:90px;transform:translateX(-50%);display:flex;align-items:end;gap:6px;height:40px}
+    .maze-meter i{width:5px;height:10px;background:#baa06b;transition:height .16s,opacity .16s}.maze-meter i.on{height:36px;opacity:1}
+    .wire-board{position:relative;width:min(430px,100%);margin:24px auto 12px;padding:20px 16px;background:linear-gradient(180deg,#1b1c18,#0c0d0c);border:8px solid #302e27;box-shadow:inset 0 0 0 1px #6b5e45,0 10px 24px #0008;border-radius:10px}
+    .wire-rail{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;height:42px;padding:0 8px;background:#292722;border:1px solid #70634a;color:#aa9165;font-size:9px;letter-spacing:.12em}
+    .wire-rail.bottom{margin-top:136px;background:#1d2824;border-color:#4e6857}
+    .wire-rail label{position:absolute;left:8px;top:-17px;color:#867b67;font-size:8px}
+    .socket{position:relative;width:14px;height:14px;min-height:0;aspect-ratio:1/1;padding:0;border:0;border-radius:2px;background:var(--wire-color,#74684d);box-shadow:0 0 0 2px #252620;cursor:pointer;line-height:1}
+    .socket::before{content:"";position:absolute;inset:-7px;border:3px solid var(--wire-color,#74684d);border-radius:50%;pointer-events:none;box-shadow:0 0 0 1px #101111}
+    .socket:hover::before,.socket.selected::before{border-color:#d5b977;box-shadow:0 0 0 3px #b08a4c55,0 0 0 1px #101111}
+    .socket.connected{background:#1c3b2b;box-shadow:0 0 0 2px #252620}
+    .socket.connected::before{border-color:#769b7d}
+    .wire-svg{position:absolute;z-index:1;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+    .wire-svg line{stroke:#b28552;stroke-width:3;stroke-linecap:round;filter:drop-shadow(0 0 3px #b2855277)}
+    .wire-svg line.good{stroke:#7caa7c}.wire-svg line.bad{stroke:#9d5650}
+    .wire-hint{margin:10px 0 0;color:#76756b;font-size:9px;line-height:1.5}
+    .maze-directions{position:absolute;left:0;right:0;bottom:22px;display:flex;justify-content:center;gap:10px}.maze-directions button{padding:10px 16px;min-width:105px}
+    .maze-panel{padding:28px 20px;background:#070808;border-left:1px solid #403b31}.maze-panel h3{font:16px Georgia,"Microsoft YaHei",serif;margin:0 0 8px}.maze-panel p{font-size:10px;line-height:1.7;color:#77766f}.maze-map{display:grid;grid-template-columns:repeat(4,26px);grid-template-rows:repeat(4,26px);gap:7px;margin:28px auto;width:max-content}.maze-map i{border:1px solid #514b3d;background:#141512}.maze-map i.visited{background:#8c7851}.maze-map i.current{outline:2px solid #dfc887}.maze-map.locked{filter:blur(5px);opacity:.25}.maze-status{margin-top:26px;color:#b99d69!important}.maze-close{width:100%;margin-top:18px}
+    @media(max-width:650px){.sound-maze{grid-template-columns:1fr}.maze-panel{position:absolute;right:8px;top:8px;width:120px;padding:12px;opacity:.9}.maze-panel p,.maze-panel h3{display:none}.maze-directions button{min-width:74px;padding:9px 7px;font-size:9px}.maze-map{grid-template-columns:repeat(4,18px);grid-template-rows:repeat(4,18px);gap:4px;margin:0 auto}.maze-close{margin-top:8px;padding:7px}}
+  </style>
+  <style>
+    html,body{font-family:"Courier New",monospace}
+    .dialogue,.choice,.puzzle,.tuning,.sound-maze,.ending{letter-spacing:.04em}
+    .dialogue p{line-height:1.55;max-width:900px}
+    .choice>p{font-family:"Courier New",monospace;font-size:18px;line-height:1.55;max-width:760px}
+    .puzzle h2,.maze-panel h3{font-family:"Courier New",monospace;letter-spacing:.08em}
+    .puzzle h2{font-size:20px;line-height:1.3;max-width:430px;margin:10px auto 0}
+    button{line-height:1.35;min-height:42px}
+    .menu-inspired,.menu-casefile{position:absolute;z-index:2;color:#e3d6bb;text-shadow:2px 3px 0 #080808,0 0 12px #000;font-family:Georgia,"Times New Roman",serif;text-transform:uppercase;pointer-events:none}
+    .language-toggle{position:absolute;left:3.2%;top:5%;z-index:4;min-height:0;padding:8px 12px;background:#080909dd;border-color:#8c7b5e;color:#d8c9a6;font-size:10px;letter-spacing:.16em;box-shadow:0 0 18px #000}
+    .language-toggle:hover,.language-toggle:focus{background:#d0bd94;color:#111}
+    .menu-inspired{top:3.8%;right:15.2%;width:14.2%;height:17.4%;padding:1.4% 1.1%;background:#030303;line-height:.92;overflow:visible;display:flex;align-items:flex-start}
+    .menu-inspired span{display:block;width:100%;font-size:clamp(10px,1.05vw,18px);font-weight:700;letter-spacing:.06em;line-height:.94;white-space:normal;overflow-wrap:normal}
+    .menu-inspired::after{content:"";position:absolute;left:100%;top:0;width:13%;height:100%;background:#030303}
+    .menu-inspired b{display:none}
+    .menu-casefile{left:2.5%;bottom:0;width:24%;height:24%;padding:2% 1.5%;background:#030303;box-sizing:border-box}
+    .menu-casefile>span{display:block;font-size:clamp(11px,1.45vw,20px);font-weight:700;letter-spacing:.18em;border-bottom:1px solid #8c7b5e;padding-bottom:5px;margin-bottom:6px}
+    .menu-casefile p{margin:0;font:700 clamp(10px,1.25vw,18px)/1.45 Georgia,"Times New Roman",serif;letter-spacing:.08em}
+    @media(max-width:650px){.menu-inspired{top:4%;right:8%;width:25%;height:16%;padding:2%}.menu-inspired span{font-size:10px}.menu-casefile{left:3%;bottom:0;width:36%;height:27%;padding:3% 2%}.menu-casefile>span{font-size:10px}.menu-casefile p{font-size:9px}}
+    .monologue{position:absolute;inset:0;z-index:30;display:grid;place-items:center;background:#020202;color:#d8c9a6;padding:8% 10%;text-align:center}
+    .monologue-card{width:min(760px,100%)}
+    .monologue-card p{min-height:5.5em;margin:0 auto 28px;font:22px/1.85 Georgia,"Microsoft YaHei",serif;letter-spacing:.06em;white-space:pre-line;text-shadow:0 0 18px #b99a5c33}
+    .monologue-card p.show{animation:monologueFade .7s ease both}
+    .monologue-card small{color:#756e61;font:11px/1.4 "Courier New",monospace;letter-spacing:.16em}
+    @keyframes monologueFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .film-credits{position:absolute;inset:0;z-index:30;overflow:hidden;background:#020202;color:#d8c9a6;text-align:center}
+    .film-credits::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,#020202 0%,transparent 15%,transparent 82%,#020202 100%)}
+    .film-credits-window{position:absolute;inset:0;overflow:hidden;mask-image:linear-gradient(180deg,transparent 0%,#000 13%,#000 84%,transparent 100%);-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 13%,#000 84%,transparent 100%)}
+    .film-credits-roll{position:absolute;top:100%;left:8%;width:84%;padding:0 0 100vh;transform:translateY(0);will-change:transform}
+    .film-credits-roll.play{animation:creditsRoll var(--credits-duration,36s) linear forwards}
+    .film-credits-roll p{margin:0 auto 48px;max-width:780px;color:#c3b083;font:18px/2.15 "Courier New","Microsoft YaHei",monospace;letter-spacing:.16em;white-space:pre-line;text-shadow:0 0 14px #b99a5c33;text-transform:uppercase}
+    .film-credits-roll p:first-child{font-size:22px;line-height:1.9;letter-spacing:.2em}
+    .film-credits-hint{position:absolute;z-index:3;left:0;right:0;bottom:22px;color:#756e61;font:11px/1.4 "Courier New",monospace;letter-spacing:.16em}
+    @keyframes creditsRoll{from{transform:translateY(0)}to{transform:translateY(calc(-100% - 100vh))}}
+    .memory-transition{position:absolute;inset:0;z-index:31;display:grid;place-items:center;overflow:hidden;background:#010101;color:#bda979}
+    .memory-transition::before{content:"";position:absolute;inset:-20%;background:repeating-linear-gradient(0deg,transparent 0 3px,#d8c99f12 4px 5px),repeating-linear-gradient(90deg,#fff0 0 13px,#bda97912 14px 15px);mix-blend-mode:screen;animation:signalNoise .08s steps(2) infinite}
+    .memory-transition::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 0 35%,#e1d2a566 48%,transparent 56%);transform:translateY(-120%);animation:signalSweep 1.15s ease-in-out both}
+    .memory-transition p{position:relative;z-index:1;margin:0;font:11px/1.4 "Courier New",monospace;letter-spacing:.28em;animation:signalText 1.15s ease both}
+    @keyframes signalNoise{0%{transform:translate(0,0);opacity:.25}50%{transform:translate(2%,-1%);opacity:.75}100%{transform:translate(-1%,1%);opacity:.35}}
+    @keyframes signalSweep{0%{transform:translateY(-120%);opacity:0}25%{opacity:.65}70%{opacity:.2}100%{transform:translateY(120%);opacity:0}}
+    @keyframes signalText{0%,25%{opacity:0;transform:translateY(5px)}45%,75%{opacity:1;transform:translateY(0)}100%{opacity:0}}
+    @media(max-width:650px){.monologue{padding:10% 8%}.monologue-card p{min-height:8em;margin-bottom:22px;font-size:16px;line-height:1.75}.monologue-card small{font-size:10px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="wordmark">FRED <span>/ THE LAST BROADCAST</span></div>
+      <div class="status"><span id="sceneLabel">PROLOGUE</span><span>CLARITY <b id="clarity">● ● ●</b></span></div>
+    </header>
+    <section id="game" class="game" tabindex="0" aria-label="FRED GAME AREA">
+      <canvas id="canvas" width="960" height="540"></canvas>
+      <div class="grain"></div><div class="vignette"></div>
+      <div id="titleScreen" class="overlay title-screen">
+        <div id="ashField" class="ash-field" aria-hidden="true"></div>
+        <button id="languageBtn" class="language-toggle" type="button" aria-label="Switch language">中文</button>
+        <div class="menu-inspired" aria-label="Inspired by Little Nightmares II"><span id="menuInspired">INSPIRED BY</span><b>LITTLE NIGHTMARES II</b></div>
+        <div class="menu-casefile" aria-label="Case file credits"><span id="menuCasefile">CASE FILE</span><p id="menuCredits">CODE · PHILIP<br>STORY · RAYNE<br>DESIGN · CHRIS</p></div>
+        <p id="menuKicker" class="kicker">A PIXEL NARRATIVE ABOUT MEMORY</p>
+        <h1>FRED</h1>
+        <p id="menuSubtitle" class="subtitle">THE LAST BROADCAST</p>
+        <button id="startBtn">BEGIN MEMORY</button>
+        <p id="menuHint" class="hint">ARROWS / A D MOVE · E INTERACT · M STORY POINTS · MOUSE TO CHOOSE</p>
+      </div>
+      <div id="monologue" class="monologue hidden" role="dialog" aria-modal="true" aria-live="polite"><div class="monologue-card"><p id="monologueText"></p><small>PRESS E TO CONTINUE</small></div></div>
+      <div id="filmCredits" class="film-credits hidden" role="dialog" aria-modal="true" aria-live="polite"><div class="film-credits-window"><div id="filmCreditsRoll" class="film-credits-roll"></div></div><small class="film-credits-hint">PRESS SPACE TO SKIP</small></div>
+      <div id="memoryTransition" class="memory-transition hidden" aria-hidden="true"><p>BROADCAST INCOMING</p></div>
+      <div id="dialogue" class="dialogue hidden"><span id="speaker"></span><p id="line"></p><small>PRESS E TO CONTINUE</small></div>
+      <div id="choice" class="choice hidden"><p id="question"></p><div id="options"></div></div>
+      <div id="puzzle" class="puzzle hidden"><div class="puzzle-card"><p class="puzzle-tag">RADIO INTERIOR</p><h2>REASSEMBLE THE PARTS</h2><div id="parts" class="parts"></div><p id="puzzleHint">CLICK THE HIGHLIGHTED PART</p></div></div>
+      <div id="tuning" class="tuning hidden"><p>TUNE THROUGH THE STATIC · FIND THE STEADY VOICE</p><input id="frequency" type="range" min="0" max="100" value="18"><div class="wave"><i></i><i></i><i></i><i></i><i></i></div><small>THE PRESENT IS HIDDEN IN THE STATIC</small></div>
+      <div id="soundMaze" class="sound-maze hidden" aria-label="SOUND MAZE">
+        <div class="maze-view"><div class="maze-arch"></div><div id="mazeFigure" class="maze-figure">◌</div><p id="mazeCaption" class="maze-caption">LISTEN FOR THE VOICE FROM NOW</p><div id="mazeMeter" class="maze-meter"><i></i><i></i><i></i><i></i><i></i></div><div id="mazeDirections" class="maze-directions"></div></div>
+        <aside class="maze-panel"><h3>SIGNAL SKETCH</h3><p>Each echo belongs to the past. The clear signal points toward the room Fred has yet to return to.</p><div id="mazeMap" class="maze-map locked"></div><p id="mazeStatus" class="maze-status">TURN 1 / 4 · FOLLOW THE STEADY SIGNAL</p><button id="mazeListen" class="maze-close">LISTEN FOR THE VOICE</button></aside>
+      </div>
+      <div id="prompt" class="prompt hidden">E · INTERACT</div>
+      <div id="assistHint" class="assist-hint hidden" role="status" aria-live="polite"></div>
+    </section>
+    <footer>
+      <span>FULL PROTOTYPE · ABOUT 15–20 MINUTES</span>
+      <div class="control-hints" aria-label="Game controls">
+        <span><kbd>←</kbd><kbd>→</kbd> / <kbd>A</kbd><kbd>D</kbd> MOVE</span>
+        <span><kbd>E</kbd> INTERACT / CONTINUE</span>
+        <span><kbd>M</kbd> STORY POINTS</span>
+        <span>MOUSE CHOOSE</span>
+      </div>
+      <span>HEADPHONES RECOMMENDED</span>
+    </footer>
+  </main>
+  <script src="script.js?v=20260816-credits-roll"></script>
+  <script src="scene_overrides.js?v=20260816-credits-roll"></script>
+</body>
+</html>
